@@ -1,3 +1,4 @@
+// Package parse for parsing network messages
 package parse
 
 import (

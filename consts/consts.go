@@ -1,3 +1,4 @@
+// Package consts for storing util consts
 package consts
 
 // Type 1 devices: Heaters (v2, touch, v4, Heater), Plug
