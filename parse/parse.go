@@ -1,6 +1,11 @@
 package parse
 
-import "encoding/hex"
+import (
+	"encoding/binary"
+	"encoding/hex"
+	"net"
+	"strconv"
+)
 
 const (
 	MessageLengthDefault = 165
@@ -20,6 +25,19 @@ func (dp *DatagramParser) IsSwitcher() (bool, error) {
 
 	return string(decoded) == "fef0" &&
 		(len(dp.message) == MessageLengthDefault || len(dp.message) == MessageLengthBreeze || len(dp.message) == MessageLengthRunner), nil
+}
+
+func (dp *DatagramParser) GetIPType1() (net.IP, error) {
+	hexIP := hex.EncodeToString(dp.message)[152:160]
+	ipAddress, err := strconv.ParseUint(hexIP[6:8]+hexIP[4:6]+hexIP[2:4]+hexIP[0:2], 16, 16)
+	if err != nil {
+		return nil, err
+	}
+
+	ip := make(net.IP, 4)
+	binary.BigEndian.PutUint32(ip, uint32(ipAddress))
+
+	return ip, nil
 }
 
 func New(msg []byte) DatagramParser {
