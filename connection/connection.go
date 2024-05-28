@@ -4,6 +4,7 @@ package connection
 import (
 	"fmt"
 	"net"
+	"switcherctl/parse"
 )
 
 // Connection the struct for the Switcher connection
@@ -13,17 +14,18 @@ type Connection struct{ serve *net.UDPConn }
 func (c *Connection) RemoteAddress() net.Addr { return c.serve.RemoteAddr() }
 
 // Write write a message to the remote server
-func (c *Connection) Write(b []byte) (int, error) { return c.serve.Write(b) }
+func (c *Connection) Write(msg string) (int, error) { return c.serve.Write([]byte(msg)) }
 
-// ReadFromUDP read the server's next message
-func (c *Connection) ReadFromUDP() (string, error) {
-	b := make([]byte, 1024)
-	n, _, err := c.serve.ReadFromUDP(b)
+// Read read the server's next message
+func (c *Connection) Read() (*parse.DatagramParser, error) {
+	messageBuffer := make([]byte, 1024)
+	n, _, err := c.serve.ReadFromUDP(messageBuffer)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(b[0:n]), nil
+	data := parse.New(messageBuffer[0:n])
+	return &data, nil
 }
 
 // Close close the connection

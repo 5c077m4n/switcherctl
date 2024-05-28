@@ -14,10 +14,12 @@ const (
 	MessageLengthRunner  = 159
 )
 
-type DatagramParser struct{ message []byte }
+type DatagramParser struct{ msg []byte }
+
+func (dp *DatagramParser) String() string { return string(dp.msg) }
 
 func (dp *DatagramParser) IsSwitcher() (bool, error) {
-	msgHex := hex.EncodeToString(dp.message)
+	msgHex := hex.EncodeToString(dp.msg)
 
 	decoded, err := hex.DecodeString(msgHex[0:4])
 	if err != nil {
@@ -25,11 +27,11 @@ func (dp *DatagramParser) IsSwitcher() (bool, error) {
 	}
 
 	return string(decoded) == "fef0" &&
-		(len(dp.message) == MessageLengthDefault || len(dp.message) == MessageLengthBreeze || len(dp.message) == MessageLengthRunner), nil
+		(len(dp.msg) == MessageLengthDefault || len(dp.msg) == MessageLengthBreeze || len(dp.msg) == MessageLengthRunner), nil
 }
 
 func (dp *DatagramParser) GetIPType1() (net.IP, error) {
-	hexIP := hex.EncodeToString(dp.message)[152:160]
+	hexIP := hex.EncodeToString(dp.msg)[152:160]
 	ipAddress, err := strconv.ParseUint(hexIP[6:8]+hexIP[4:6]+hexIP[2:4]+hexIP[0:2], 16, 16)
 	if err != nil {
 		return nil, err
@@ -42,5 +44,5 @@ func (dp *DatagramParser) GetIPType1() (net.IP, error) {
 }
 
 func New(msg []byte) DatagramParser {
-	return DatagramParser{message: msg}
+	return DatagramParser{msg: msg}
 }
