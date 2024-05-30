@@ -23,8 +23,6 @@ func main() {
 		}
 	}()
 
-	log.Printf("The UDP server is connected @ %s\n", conn.RemoteAddress())
-
 	for {
 		data, err := conn.Read()
 		if err != nil {

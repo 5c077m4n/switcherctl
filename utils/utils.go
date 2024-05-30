@@ -1,3 +1,4 @@
+// Package utils general helpers
 package utils
 
 import (
@@ -7,11 +8,12 @@ import (
 	"time"
 )
 
-// Convert power consumption to watts to electric current in amps.
+// WattsToAmps Convert power consumption to watts to electric current in amps.
 func WattsToAmps(watts int) int {
 	return int(math.Round(float64(watts) / float64(220)))
 }
 
+// CurrentTimeLE current time in little edian format
 func CurrentTimeLE() string {
 	now := time.Now()
 	epochSeconds := now.Unix()

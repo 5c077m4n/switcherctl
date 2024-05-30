@@ -43,6 +43,7 @@ func (dp *DatagramParser) GetIPType1() (net.IP, error) {
 	return ip, nil
 }
 
+// New create a DatagramParser instance
 func New(msg []byte) DatagramParser {
 	return DatagramParser{msg: msg}
 }

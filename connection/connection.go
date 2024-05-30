@@ -12,19 +12,17 @@ import (
 // Connection the struct for the Switcher connection
 type Connection struct{ serve *net.UDPConn }
 
-// RemoteAddress get the remote address
-func (c *Connection) RemoteAddress() net.Addr { return c.serve.RemoteAddr() }
-
 // Write write a message to the remote server
 func (c *Connection) Write(msg string) (int, error) { return c.serve.Write([]byte(msg)) }
 
 // Read read the server's next message
 func (c *Connection) Read() (*parse.DatagramParser, error) {
 	messageBuffer := make([]byte, 1024)
-	n, _, err := c.serve.ReadFromUDP(messageBuffer)
+	n, udpAddr, err := c.serve.ReadFromUDP(messageBuffer)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Received '%s' from %s\n", messageBuffer, udpAddr)
 
 	data := parse.New(messageBuffer[0:n])
 	return &data, nil
@@ -48,6 +46,7 @@ func TryNew(ip string, port int) (*Connection, error) {
 	if err := serve.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
 		log.Fatalln(err)
 	}
+	log.Printf("The UDP server is connected @ %s\n", serve.RemoteAddr())
 
 	return &Connection{serve: serve}, nil
 }
