@@ -3,8 +3,10 @@ package connection
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"switcherctl/parse"
+	"time"
 )
 
 // Connection the struct for the Switcher connection
@@ -33,15 +35,18 @@ func (c *Connection) Close() error { return c.serve.Close() }
 
 // TryNew try to create a new connection instance
 func TryNew(ip string, port int) (*Connection, error) {
-	deviceHostIP := ip + ":" + fmt.Sprint(port)
-	addr, err := net.ResolveUDPAddr("udp4", deviceHostIP)
+	deviceHostIP := fmt.Sprintf("%s:%d", ip, port)
+	remoteAddr, err := net.ResolveUDPAddr("udp4", deviceHostIP)
 	if err != nil {
 		return nil, err
 	}
 
-	serve, err := net.DialUDP("udp4", nil, addr)
+	serve, err := net.DialUDP("udp4", nil, remoteAddr)
 	if err != nil {
 		return nil, err
+	}
+	if err := serve.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
+		log.Fatalln(err)
 	}
 
 	return &Connection{serve: serve}, nil

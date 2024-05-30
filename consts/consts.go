@@ -38,7 +38,7 @@ const (
 
 var (
 	DeviceCategoryToUDPPort = map[int]int{
-		DeviceCategoryWaterHeater: UDPPortType1,
+		DeviceCategoryWaterHeater: UDPPortType1New,
 		DeviceCategoryPowerPlug:   UDPPortType1,
 		DeviceCategoryThermostat:  UDPPortType2,
 		DeviceCategoryShutter:     UDPPortType2,
