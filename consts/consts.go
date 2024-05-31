@@ -32,6 +32,7 @@ const (
 	DeviceTypeRunnerMini
 )
 
+// DefaultIP the fallback IP
 const (
 	DefaultIP = "10.100.102.82"
 )

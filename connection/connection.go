@@ -39,7 +39,13 @@ func TryNew(ip string, port int) (*Connection, error) {
 		return nil, err
 	}
 
-	serve, err := net.DialUDP("udp4", nil, remoteAddr)
+	localIP := fmt.Sprintf("0.0.0.0:%d", port)
+	localAddr, err := net.ResolveUDPAddr("udp4", localIP)
+	if err != nil {
+		return nil, err
+	}
+
+	serve, err := net.DialUDP("udp4", localAddr, remoteAddr)
 	if err != nil {
 		return nil, err
 	}
