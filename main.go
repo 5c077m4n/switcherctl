@@ -29,6 +29,6 @@ func main() {
 			log.Fatalln(err)
 		}
 
-		log.Printf("Reply: %s\n", data)
+		log.Printf("Received: %s\n", data)
 	}
 }

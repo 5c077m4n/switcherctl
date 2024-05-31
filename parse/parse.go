@@ -6,38 +6,36 @@ import (
 	"encoding/hex"
 	"net"
 	"strconv"
+	"switcherctl/consts"
 )
 
-const (
-	MessageLengthDefault = 165
-	MessageLengthBreeze  = 168
-	MessageLengthRunner  = 159
-)
+const switcherMessagePrefix = "fef0"
 
-type DatagramParser struct{ msg []byte }
-
-func (dp *DatagramParser) String() string { return string(dp.msg) }
-
-func (dp *DatagramParser) IsSwitcher() (bool, error) {
-	msgHex := hex.EncodeToString(dp.msg)
-
-	decoded, err := hex.DecodeString(msgHex[0:4])
-	if err != nil {
-		return false, err
-	}
-
-	return string(decoded) == "fef0" &&
-		(len(dp.msg) == MessageLengthDefault || len(dp.msg) == MessageLengthBreeze || len(dp.msg) == MessageLengthRunner), nil
+// DatagramParser struct to parse incoming messages
+type DatagramParser struct {
+	msgHex string
+	msg    []byte
 }
 
-func (dp *DatagramParser) GetIPType1() (net.IP, error) {
-	hexIP := hex.EncodeToString(dp.msg)[152:160]
+func (parser *DatagramParser) String() string { return string(parser.msg) }
+
+// IsSwitcher test if message originates from a Swticher device
+func (parser *DatagramParser) IsSwitcher() bool {
+	return parser.msgHex[:4] == switcherMessagePrefix &&
+		(len(parser.msg) == consts.MessageLengthDefault ||
+			len(parser.msg) == consts.MessageLengthBreeze ||
+			len(parser.msg) == consts.MessageLengthRunner)
+}
+
+// GetIPType1 get the IP of the device from a message
+func (parser *DatagramParser) GetIPType1() (net.IP, error) {
+	hexIP := parser.msgHex[152:160]
 	ipAddress, err := strconv.ParseUint(hexIP[6:8]+hexIP[4:6]+hexIP[2:4]+hexIP[0:2], 16, 16)
 	if err != nil {
 		return nil, err
 	}
 
-	ip := make(net.IP, 4)
+	ip := net.IP{}
 	binary.BigEndian.PutUint32(ip, uint32(ipAddress))
 
 	return ip, nil
@@ -45,5 +43,6 @@ func (dp *DatagramParser) GetIPType1() (net.IP, error) {
 
 // New create a DatagramParser instance
 func New(msg []byte) DatagramParser {
-	return DatagramParser{msg: msg}
+	msgHex := hex.EncodeToString(msg)
+	return DatagramParser{msg: msg, msgHex: msgHex}
 }

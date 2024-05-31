@@ -2,57 +2,59 @@
 package connection
 
 import (
-	"fmt"
-	"log"
+	"errors"
 	"net"
+	"switcherctl/consts"
 	"switcherctl/parse"
 	"time"
 )
 
-// Connection the struct for the Switcher connection
-type Connection struct{ serve *net.UDPConn }
+// ErrWrongRemote wrong remote error
+var ErrWrongRemote = errors.New("message did not originate from a Switcher device")
 
-// Write write a message to the remote server
-func (c *Connection) Write(msg string) (int, error) { return c.serve.Write([]byte(msg)) }
+// Connection the struct for the Switcher connection
+type Connection struct {
+	conn   *net.UDPConn
+	remote *net.UDPAddr
+}
 
 // Read read the server's next message
 func (c *Connection) Read() (*parse.DatagramParser, error) {
 	messageBuffer := make([]byte, 1024)
-	n, udpAddr, err := c.serve.ReadFromUDP(messageBuffer)
+	n, remoteAddr, err := c.conn.ReadFromUDP(messageBuffer)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Received '%s' from %s\n", messageBuffer, udpAddr)
+	if !remoteAddr.IP.Equal(consts.DefaultIP) {
+		return nil, ErrWrongRemote
+	}
 
-	data := parse.New(messageBuffer[0:n])
+	data := parse.New(messageBuffer[:n])
+	if !data.IsSwitcher() {
+		return nil, ErrWrongRemote
+	}
+
 	return &data, nil
 }
 
 // Close close the connection
-func (c *Connection) Close() error { return c.serve.Close() }
+func (c *Connection) Close() error { return c.conn.Close() }
 
 // TryNew try to create a new connection instance
-func TryNew(ip string, port int) (*Connection, error) {
-	deviceHostIP := fmt.Sprintf("%s:%d", ip, port)
-	remoteAddr, err := net.ResolveUDPAddr("udp4", deviceHostIP)
+func TryNew(ip net.IP, port int) (*Connection, error) {
+	localAddr := &net.UDPAddr{IP: net.IP{0, 0, 0, 0}, Port: port, Zone: ""}
+
+	conn, err := net.ListenUDP("udp4", localAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	localIP := fmt.Sprintf("0.0.0.0:%d", port)
-	localAddr, err := net.ResolveUDPAddr("udp4", localIP)
-	if err != nil {
+	if err := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
 		return nil, err
 	}
 
-	serve, err := net.DialUDP("udp4", localAddr, remoteAddr)
-	if err != nil {
-		return nil, err
-	}
-	if err := serve.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
-		log.Fatalln(err)
-	}
-	log.Printf("The UDP server is connected @ %s\n", serve.RemoteAddr())
-
-	return &Connection{serve: serve}, nil
+	return &Connection{
+		conn:   conn,
+		remote: &net.UDPAddr{IP: ip, Port: port, Zone: ""},
+	}, nil
 }

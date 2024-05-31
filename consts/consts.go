@@ -1,6 +1,8 @@
 // Package consts for storing util consts
 package consts
 
+import "net"
+
 // Type 1 devices: Heaters (v2, touch, v4, Heater), Plug
 // Type 2 devices: Breeze, Runners
 
@@ -33,8 +35,12 @@ const (
 )
 
 // DefaultIP the fallback IP
+var DefaultIP = net.IP{10, 100, 102, 82}
+
 const (
-	DefaultIP = "10.100.102.82"
+	MessageLengthDefault = 165
+	MessageLengthBreeze  = 168
+	MessageLengthRunner  = 159
 )
 
 var (
