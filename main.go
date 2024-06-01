@@ -35,7 +35,7 @@ func main() {
 		}
 
 		log.Printf(
-			"Received: %s\nfrom device ID: %s\nfrom IP: %s",
+			"\nReceived: `%s`\n> Device ID: %s\n> IP: %s\n\n",
 			data,
 			data.GetDeviceID(),
 			ip,

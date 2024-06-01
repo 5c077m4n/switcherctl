@@ -2,7 +2,6 @@
 package parse
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"net"
@@ -31,20 +30,22 @@ func (parser *DatagramParser) IsSwitcher() bool {
 			len(parser.msg) == consts.MessageLengthRunner)
 }
 
-// GetIPType1 get the IP of the device from a message
+// GetIPType1 get the IP of the device from the message
 func (parser *DatagramParser) GetIPType1() (net.IP, error) {
 	if len(parser.msgHex) < 160 {
 		return nil, ErrInvalidMessage
 	}
 
-	hexIP := parser.msgHex[152:160]
-	ipAddress, err := strconv.ParseUint(hexIP[6:8]+hexIP[4:6]+hexIP[2:4]+hexIP[0:2], 16, 32)
-	if err != nil {
-		return nil, err
-	}
+	beHexIP := parser.msgHex[152:160]
 
 	ip := net.IP{}
-	binary.BigEndian.PutUint32(ip, uint32(ipAddress))
+	for i := 0; i <= 6; i += 2 {
+		ipPart, err := strconv.ParseUint(beHexIP[i:i+2], 16, 8)
+		if err != nil {
+			return nil, err
+		}
+		ip = append(ip, uint8(ipPart))
+	}
 
 	return ip, nil
 }
