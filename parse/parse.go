@@ -41,6 +41,11 @@ func (parser *DatagramParser) GetIPType1() (net.IP, error) {
 	return ip, nil
 }
 
+// GetDeviceID extract the device's ID from the message
+func (parser *DatagramParser) GetDeviceID() string {
+	return hex.EncodeToString(parser.msg[40:41])
+}
+
 // New create a DatagramParser instance
 func New(msg []byte) DatagramParser {
 	msgHex := hex.EncodeToString(msg)

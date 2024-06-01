@@ -29,6 +29,6 @@ func main() {
 			log.Fatalln(err)
 		}
 
-		log.Printf("Received: %s\n", data)
+		log.Printf("Received: %s\nfrom device ID: %s", data, data.GetDeviceID())
 	}
 }
