@@ -34,11 +34,21 @@ func main() {
 			log.Fatalln(err)
 		}
 
-		log.Printf(
-			"\nReceived: `%s`\n> Device ID: %s\n> IP: %s\n\n",
+		log.Printf(`
+Received: "%s"
+> From: "%s"
+> Device ID: "%s"
+> Key: "%s"
+> IP: %s
+> MAC: %s
+
+			`,
 			data,
+			data.GetDeviceName(),
 			data.GetDeviceID(),
+			data.GetDeviceKey(),
 			ip,
+			data.GetDeviceMAC(),
 		)
 	}
 }

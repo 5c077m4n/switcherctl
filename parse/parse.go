@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net"
 	"strconv"
+	"strings"
 	"switcherctl/consts"
 )
 
@@ -50,9 +51,28 @@ func (parser *DatagramParser) GetIPType1() (net.IP, error) {
 	return ip, nil
 }
 
+// GetDeviceName extract the device's name from the message
+func (parser *DatagramParser) GetDeviceName() string {
+	return string(parser.msg[42:74])
+}
+
 // GetDeviceID extract the device's ID from the message
 func (parser *DatagramParser) GetDeviceID() string {
-	return hex.EncodeToString(parser.msg[40:41])
+	return hex.EncodeToString(parser.msg[36:42])
+}
+
+// GetDeviceKey extract the device's key from the message
+func (parser *DatagramParser) GetDeviceKey() string {
+	return hex.EncodeToString(parser.msg[80:82])
+}
+
+// GetDeviceMAC extract the device's MAC address from the message
+func (parser *DatagramParser) GetDeviceMAC() string {
+	rawMAC := strings.ToUpper(parser.msgHex[160:172])
+	return strings.Join(
+		[]string{rawMAC[0:2], rawMAC[2:4], rawMAC[4:6], rawMAC[6:8], rawMAC[8:10], rawMAC[10:12]},
+		":",
+	)
 }
 
 // New create a DatagramParser instance
