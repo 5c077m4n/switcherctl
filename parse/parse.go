@@ -4,12 +4,16 @@ package parse
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"net"
 	"strconv"
 	"switcherctl/consts"
 )
 
 const switcherMessagePrefix = "fef0"
+
+// ErrInvalidMessage error for when the message is too short and so can't be parsed
+var ErrInvalidMessage = errors.New("the received message is invalid (too short)")
 
 // DatagramParser struct to parse incoming messages
 type DatagramParser struct {
@@ -29,8 +33,12 @@ func (parser *DatagramParser) IsSwitcher() bool {
 
 // GetIPType1 get the IP of the device from a message
 func (parser *DatagramParser) GetIPType1() (net.IP, error) {
+	if len(parser.msgHex) < 160 {
+		return nil, ErrInvalidMessage
+	}
+
 	hexIP := parser.msgHex[152:160]
-	ipAddress, err := strconv.ParseUint(hexIP[6:8]+hexIP[4:6]+hexIP[2:4]+hexIP[0:2], 16, 16)
+	ipAddress, err := strconv.ParseUint(hexIP[6:8]+hexIP[4:6]+hexIP[2:4]+hexIP[0:2], 16, 32)
 	if err != nil {
 		return nil, err
 	}

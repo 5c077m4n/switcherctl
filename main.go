@@ -29,6 +29,16 @@ func main() {
 			log.Fatalln(err)
 		}
 
-		log.Printf("Received: %s\nfrom device ID: %s", data, data.GetDeviceID())
+		ip, err := data.GetIPType1()
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		log.Printf(
+			"Received: %s\nfrom device ID: %s\nfrom IP: %s",
+			data,
+			data.GetDeviceID(),
+			ip,
+		)
 	}
 }
