@@ -41,6 +41,7 @@ Received: "%s"
 > Key: "%s"
 > IP: %s
 > MAC: %s
+> On: %v
 
 			`,
 			data,
@@ -49,6 +50,7 @@ Received: "%s"
 			data.GetDeviceKey(),
 			ip,
 			data.GetDeviceMAC(),
+			data.IsPoweredOn(),
 		)
 	}
 }

@@ -75,6 +75,12 @@ func (parser *DatagramParser) GetDeviceMAC() string {
 	)
 }
 
+// IsPoweredOn extract the device's state from the message
+func (parser *DatagramParser) IsPoweredOn() bool {
+	state := parser.msgHex[266:268]
+	return state == "01"
+}
+
 // New create a DatagramParser instance
 func New(msg []byte) DatagramParser {
 	msgHex := hex.EncodeToString(msg)
