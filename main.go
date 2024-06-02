@@ -28,8 +28,15 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-
 		ip, err := data.GetIPType1()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		autoShutdown, err := data.GetTimeToShutdown()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		remaining, err := data.GetRemainingTime()
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -42,8 +49,10 @@ Received: "%s"
 > IP: %s
 > MAC: %s
 > On: %v
+> Auto shutdown in: %s
+> Ramaingin time: %s
 
-			`,
+`,
 			data,
 			data.GetDeviceName(),
 			data.GetDeviceID(),
@@ -51,6 +60,8 @@ Received: "%s"
 			ip,
 			data.GetDeviceMAC(),
 			data.IsPoweredOn(),
+			autoShutdown,
+			remaining,
 		)
 	}
 }
