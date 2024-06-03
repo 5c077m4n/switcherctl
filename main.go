@@ -40,6 +40,10 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
+		mac, err := data.GetDeviceMAC()
+		if err != nil {
+			log.Fatalln(err)
+		}
 
 		log.Printf(`
 Received: "%s"
@@ -58,7 +62,7 @@ Received: "%s"
 			data.GetDeviceID(),
 			data.GetDeviceKey(),
 			ip,
-			data.GetDeviceMAC(),
+			mac,
 			data.IsPoweredOn(),
 			autoShutdown,
 			remaining,

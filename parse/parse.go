@@ -80,12 +80,17 @@ func (parser *DatagramParser) GetDeviceKey() string {
 }
 
 // GetDeviceMAC extract the device's MAC address from the message
-func (parser *DatagramParser) GetDeviceMAC() string {
+func (parser *DatagramParser) GetDeviceMAC() (*net.HardwareAddr, error) {
 	rawMAC := strings.ToUpper(parser.msgHex[160:172])
-	return strings.Join(
+
+	mac, err := net.ParseMAC(strings.Join(
 		[]string{rawMAC[0:2], rawMAC[2:4], rawMAC[4:6], rawMAC[6:8], rawMAC[8:10], rawMAC[10:12]},
 		":",
-	)
+	))
+	if err != nil {
+		return nil, err
+	}
+	return &mac, nil
 }
 
 // IsPoweredOn extract the device's state from the message
