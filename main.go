@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"switcherctl/connection"
 	"switcherctl/consts"
@@ -23,49 +24,15 @@ func main() {
 		}
 	}()
 
-	for {
-		data, err := conn.Read()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		ip, err := data.GetIPType1()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		autoShutdown, err := data.GetTimeToShutdown()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		remaining, err := data.GetRemainingTime()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		mac, err := data.GetDeviceMAC()
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		log.Printf(`
-Received: "%s"
-> From: "%s"
-> Device ID: "%s"
-> Key: "%s"
-> IP: %s
-> MAC: %s
-> On: %v
-> Auto shutdown in: %s
-> Ramaingin time: %s
-
-`,
-			data,
-			data.GetDeviceName(),
-			data.GetDeviceID(),
-			data.GetDeviceKey(),
-			ip,
-			mac,
-			data.IsPoweredOn(),
-			autoShutdown,
-			remaining,
-		)
+	data, err := conn.Read()
+	if err != nil {
+		log.Fatalln(err)
 	}
+
+	results, err := json.Marshal(data)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	log.Println(string(results))
 }

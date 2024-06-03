@@ -3,8 +3,9 @@ package parse
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"errors"
-	"fmt"
+	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -17,22 +18,24 @@ const switcherMessagePrefix = "fef0"
 // ErrInvalidMessage error for when the message is too short and so can't be parsed
 var ErrInvalidMessage = errors.New("the received message is invalid (too short)")
 
-func secondsToISOTime(totalSeconds int) (*time.Duration, error) {
-	minutes, seconds := totalSeconds/60, totalSeconds%60
-	hours, minutes := minutes/60, minutes%60
-	duration, err := time.ParseDuration(fmt.Sprintf("%dh%dm%ds", hours, minutes, seconds))
-	if err != nil {
-		return nil, err
+type (
+	// DatagramParser struct to parse incoming messages
+	DatagramParser struct {
+		msgHex string
+		msg    []byte
 	}
-
-	return &duration, nil
-}
-
-// DatagramParser struct to parse incoming messages
-type DatagramParser struct {
-	msgHex string
-	msg    []byte
-}
+	// DatagramParsedJSON a JSON representation of the network datagram's content
+	DatagramParsedJSON struct {
+		Name           string `json:"name"`
+		IP             string `json:"ip"`
+		ID             string `json:"id"`
+		Key            string `json:"key"`
+		MAC            string `json:"mac"`
+		TimeToShutdown string `json:"timeToShutdown"`
+		TimeRemaining  string `json:"remainingTime"`
+		PowerOn        bool   `json:"powerOn"`
+	}
+)
 
 func (parser *DatagramParser) String() string { return string(parser.msg) }
 
@@ -66,7 +69,9 @@ func (parser *DatagramParser) GetIPType1() (net.IP, error) {
 
 // GetDeviceName extract the device's name from the message
 func (parser *DatagramParser) GetDeviceName() string {
-	return string(parser.msg[42:74])
+	rawName := string(parser.msg[42:74])
+	name := strings.TrimRight(rawName, "\u0000")
+	return name
 }
 
 // GetDeviceID extract the device's ID from the message
@@ -123,6 +128,37 @@ func (parser *DatagramParser) GetRemainingTime() (*time.Duration, error) {
 
 	endsIn := time.Duration(remainingSeconds * uint64(time.Second))
 	return &endsIn, nil
+}
+
+// MarshalJSON returns a JSON struct of the datagram packet
+func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
+	ip, err := parser.GetIPType1()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	autoShutdown, err := parser.GetTimeToShutdown()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	remaining, err := parser.GetRemainingTime()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	mac, err := parser.GetDeviceMAC()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return json.Marshal(&DatagramParsedJSON{
+		Name:           parser.GetDeviceName(),
+		IP:             ip.String(),
+		ID:             parser.GetDeviceID(),
+		Key:            parser.GetDeviceKey(),
+		MAC:            mac.String(),
+		TimeToShutdown: autoShutdown.String(),
+		TimeRemaining:  remaining.String(),
+		PowerOn:        parser.IsPoweredOn(),
+	})
 }
 
 // New create a DatagramParser instance
