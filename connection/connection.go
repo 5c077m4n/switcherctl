@@ -4,7 +4,6 @@ package connection
 import (
 	"errors"
 	"net"
-	"switcherctl/consts"
 	"switcherctl/parse"
 	"time"
 )
@@ -25,7 +24,7 @@ func (c *Connection) Read() (*parse.DatagramParser, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !remoteAddr.IP.Equal(consts.DefaultIP) {
+	if !remoteAddr.IP.Equal(c.remote.IP) {
 		return nil, ErrWrongRemote
 	}
 

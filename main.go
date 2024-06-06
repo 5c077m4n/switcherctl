@@ -3,20 +3,32 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"log"
+	"net"
 	"switcherctl/connection"
 	"switcherctl/consts"
 )
 
 func main() {
-	port, ok := consts.DeviceCategoryToUDPPort[consts.DeviceCategoryWaterHeater]
-	if !ok {
-		log.Fatalln("Could not find port for this device")
+	ip := flag.String("ip", consts.DefaultIP.String(), "The local Switcher device's IP address")
+	port := flag.Int("port", consts.UDPPortType1New, "The local Switcher device's port")
+	flag.Parse()
+
+	parsedIP := net.ParseIP(*ip)
+	if parsedIP == nil {
+		log.Fatalln(consts.ErrInvalidIP)
+		return
+	}
+	if port == nil || *port < 100 || *port >= 65_000 {
+		log.Fatalln(consts.ErrInvalidPort)
+		return
 	}
 
-	conn, err := connection.TryNew(consts.DefaultIP, port)
+	conn, err := connection.TryNew(parsedIP, *port)
 	if err != nil {
 		log.Fatalln(err)
+		return
 	}
 	defer func() {
 		if closeErr := conn.Close(); closeErr != nil {
@@ -27,11 +39,13 @@ func main() {
 	data, err := conn.Read()
 	if err != nil {
 		log.Fatalln(err)
+		return
 	}
 
 	results, err := json.Marshal(data)
 	if err != nil {
 		log.Fatalln(err)
+		return
 	}
 
 	log.Println(string(results))
