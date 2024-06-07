@@ -6,6 +6,7 @@ import "net"
 // Type 1 devices: Heaters (v2, touch, v4, Heater), Plug
 // Type 2 devices: Breeze, Runners
 
+// Port types and values
 const (
 	UDPPortType1    = 20_002
 	UDPPortType1New = 10_002
@@ -15,6 +16,7 @@ const (
 	TCPPortType2    = 10_000
 )
 
+// Device catgories
 const (
 	DeviceCategoryWaterHeater = iota
 	DeviceCategoryPowerPlug
@@ -22,6 +24,7 @@ const (
 	DeviceCategoryShutter
 )
 
+// Device types
 const (
 	DeviceTypeMini = iota
 	DeviceTypePowerPlug
@@ -34,15 +37,17 @@ const (
 	DeviceTypeRunnerMini
 )
 
-// DefaultIP the fallback IP
-var DefaultIP = net.IP{10, 100, 102, 82}
-
+// Message lengths for different devices
 const (
 	MessageLengthDefault = 165
 	MessageLengthBreeze  = 168
 	MessageLengthRunner  = 159
 )
 
+// DefaultIP the fallback IP
+var DefaultIP = net.IP{10, 100, 102, 82}
+
+// Devices join maps
 var (
 	DeviceCategoryToUDPPort = map[int]int{
 		DeviceCategoryWaterHeater: UDPPortType1New,
