@@ -13,16 +13,13 @@ func WattsToAmps(watts int) int {
 	return int(math.Round(float64(watts) / float64(220)))
 }
 
-// CurrentTimeLE current time in little edian format
-func CurrentTimeLE() string {
+// CurrentTimeHexLE current time in little edian hex format
+func CurrentTimeHexLE() string {
 	now := time.Now()
 	epochSeconds := now.Unix()
 
 	timeLEBuf := make([]byte, 8)
 	binary.LittleEndian.PutUint64(timeLEBuf, uint64(epochSeconds))
 
-	timeHexBuf := make([]byte, 8)
-	hex.Encode(timeHexBuf, timeLEBuf)
-
-	return string(timeHexBuf)
+	return hex.EncodeToString(timeLEBuf)
 }

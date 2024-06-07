@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-// ErrWrongRemote wrong remote error
-var ErrWrongRemote = errors.New("message did not originate from a Switcher device")
-
 // Connection the struct for the Switcher connection
 type Connection struct {
 	conn   *net.UDPConn
 	remote *net.UDPAddr
 }
+
+// ErrWrongRemote wrong remote error
+var ErrWrongRemote = errors.New("message did not originate from a Switcher device")
 
 // Read read the server's next message
 func (c *Connection) Read() (*parse.DatagramParser, error) {
