@@ -107,8 +107,8 @@ func (parser *DatagramParser) IsPoweredOn() bool {
 
 // GetTimeToShutdown get the datetime of the auto power off
 func (parser *DatagramParser) GetTimeToShutdown() (*time.Duration, error) {
-	autoShutdown := parser.msgHex[310:318]
-	leAutoShutdown := autoShutdown[6:8] + autoShutdown[4:6] + autoShutdown[2:4] + autoShutdown[0:2]
+	beAutoShutdown := parser.msgHex[310:318]
+	leAutoShutdown := beAutoShutdown[6:8] + beAutoShutdown[4:6] + beAutoShutdown[2:4] + beAutoShutdown[0:2]
 	autoShutdownSeconds, err := strconv.ParseUint(leAutoShutdown, 16, 32)
 	if err != nil {
 		return nil, err
@@ -120,8 +120,8 @@ func (parser *DatagramParser) GetTimeToShutdown() (*time.Duration, error) {
 
 // GetRemainingTime get the remaining time to work end
 func (parser *DatagramParser) GetRemainingTime() (*time.Duration, error) {
-	remainingHex := parser.msgHex[294:302]
-	leRemainingSeconds := remainingHex[6:8] + remainingHex[4:6] + remainingHex[2:4] + remainingHex[0:2]
+	beRemainingHex := parser.msgHex[294:302]
+	leRemainingSeconds := beRemainingHex[6:8] + beRemainingHex[4:6] + beRemainingHex[2:4] + beRemainingHex[0:2]
 	remainingSeconds, err := strconv.ParseUint(leRemainingSeconds, 16, 32)
 	if err != nil {
 		return nil, err
