@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -145,23 +144,23 @@ func (parser *DatagramParser) GetPowerConsumption() (uint64, error) {
 func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
 	ip, err := parser.GetIPType1()
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	autoShutdown, err := parser.GetTimeToShutdown()
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	remaining, err := parser.GetRemainingTime()
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	mac, err := parser.GetDeviceMAC()
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	powerConsumption, err := parser.GetPowerConsumption()
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	return json.Marshal(&DatagramParsedJSON{
