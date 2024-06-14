@@ -26,14 +26,15 @@ type (
 	}
 	// DatagramParsedJSON a JSON representation of the network datagram's content
 	DatagramParsedJSON struct {
-		Name           string `json:"name"`
-		IP             string `json:"ip"`
-		ID             string `json:"id"`
-		Key            string `json:"key"`
-		MAC            string `json:"mac"`
-		TimeToShutdown string `json:"timeToShutdown"`
-		TimeRemaining  string `json:"remainingTime"`
-		PowerOn        bool   `json:"powerOn"`
+		Name             string `json:"name"`
+		IP               string `json:"ip"`
+		ID               string `json:"id"`
+		Key              string `json:"key"`
+		MAC              string `json:"mac"`
+		TimeToShutdown   string `json:"timeToShutdown"`
+		TimeRemaining    string `json:"remainingTime"`
+		PowerOn          bool   `json:"powerOn"`
+		PowerConsumption uint64 `json:"powerConsumption"`
 	}
 )
 
@@ -130,6 +131,16 @@ func (parser *DatagramParser) GetRemainingTime() (*time.Duration, error) {
 	return &endsIn, nil
 }
 
+// GetPowerConsumption get the power consumption (in watts)
+func (parser *DatagramParser) GetPowerConsumption() (uint64, error) {
+	hexPowerConsumption := parser.msgHex[270:278]
+	return strconv.ParseUint(
+		hexPowerConsumption[2:4]+hexPowerConsumption[0:2],
+		16,
+		32,
+	)
+}
+
 // MarshalJSON returns a JSON struct of the datagram packet
 func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
 	ip, err := parser.GetIPType1()
@@ -148,16 +159,21 @@ func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	powerConsumption, err := parser.GetPowerConsumption()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	return json.Marshal(&DatagramParsedJSON{
-		Name:           parser.GetDeviceName(),
-		IP:             ip.String(),
-		ID:             parser.GetDeviceID(),
-		Key:            parser.GetDeviceKey(),
-		MAC:            mac.String(),
-		TimeToShutdown: autoShutdown.String(),
-		TimeRemaining:  remaining.String(),
-		PowerOn:        parser.IsPoweredOn(),
+		Name:             parser.GetDeviceName(),
+		IP:               ip.String(),
+		ID:               parser.GetDeviceID(),
+		Key:              parser.GetDeviceKey(),
+		MAC:              mac.String(),
+		TimeToShutdown:   autoShutdown.String(),
+		TimeRemaining:    remaining.String(),
+		PowerOn:          parser.IsPoweredOn(),
+		PowerConsumption: powerConsumption,
 	})
 }
 
