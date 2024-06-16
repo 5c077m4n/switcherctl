@@ -1,7 +1,9 @@
 // Package consts for storing util consts
 package consts
 
-import "net"
+import (
+	"net"
+)
 
 // Type 1 devices: Heaters (v2, touch, v4, Heater), Plug
 // Type 2 devices: Breeze, Runners
@@ -42,6 +44,11 @@ const (
 	MessageLengthDefault = 165
 	MessageLengthBreeze  = 168
 	MessageLengthRunner  = 159
+)
+
+// Login packets
+const (
+	LoginPacketType1 = "fef052000232a10000000000340001000000000000000000%s00000000000000000000f0fe%s00000000000000000000000000000000000000000000000000000000000000000000000000"
 )
 
 // DefaultIP the fallback IP
