@@ -1,5 +1,5 @@
-// Package connection for creating a connection to a Switcher device
-package connection
+// Package connections for creating a listening connection to a Switcher device
+package connections
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// Connection the struct for the Switcher connection
-type Connection struct {
+// Listener the struct for the Switcher connection
+type Listener struct {
 	conn   *net.UDPConn
 	remote *net.UDPAddr
 }
@@ -18,13 +18,13 @@ type Connection struct {
 var ErrWrongRemote = errors.New("message did not originate from a Switcher device")
 
 // Read read the server's next message
-func (c *Connection) Read() (*parse.DatagramParser, error) {
+func (l *Listener) Read() (*parse.DatagramParser, error) {
 	messageBuffer := make([]byte, 1024)
-	n, remoteAddr, err := c.conn.ReadFromUDP(messageBuffer)
+	n, remoteAddr, err := l.conn.ReadFromUDP(messageBuffer)
 	if err != nil {
 		return nil, err
 	}
-	if !remoteAddr.IP.Equal(c.remote.IP) {
+	if !remoteAddr.IP.Equal(l.remote.IP) {
 		return nil, ErrWrongRemote
 	}
 
@@ -37,11 +37,11 @@ func (c *Connection) Read() (*parse.DatagramParser, error) {
 }
 
 // Close close the connection
-func (c *Connection) Close() error { return c.conn.Close() }
+func (l *Listener) Close() error { return l.conn.Close() }
 
-// TryNew try to create a new connection instance
-func TryNew(ip net.IP, port int) (*Connection, error) {
-	localAddr := &net.UDPAddr{IP: net.IP{0, 0, 0, 0}, Port: port, Zone: ""}
+// TryNewListener try to create a new connection instance
+func TryNewListener(ip net.IP, port int) (*Listener, error) {
+	localAddr := &net.UDPAddr{IP: net.IP{0, 0, 0, 0}, Port: port}
 
 	conn, err := net.ListenUDP("udp4", localAddr)
 	if err != nil {
@@ -52,8 +52,5 @@ func TryNew(ip net.IP, port int) (*Connection, error) {
 		return nil, err
 	}
 
-	return &Connection{
-		conn:   conn,
-		remote: &net.UDPAddr{IP: ip, Port: port, Zone: ""},
-	}, nil
+	return &Listener{conn: conn, remote: &net.UDPAddr{IP: ip, Port: port}}, nil
 }

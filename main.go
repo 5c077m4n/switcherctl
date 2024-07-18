@@ -6,7 +6,7 @@ import (
 	"flag"
 	"log"
 	"net"
-	"switcherctl/connection"
+	"switcherctl/connections"
 	"switcherctl/consts"
 )
 
@@ -25,7 +25,7 @@ func main() {
 		return
 	}
 
-	conn, err := connection.TryNew(parsedIP, *port)
+	conn, err := connections.TryNewListener(parsedIP, *port)
 	if err != nil {
 		log.Fatalln(err)
 		return
