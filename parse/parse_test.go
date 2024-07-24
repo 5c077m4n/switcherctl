@@ -1,58 +1,76 @@
 package parse
 
 import (
-	_ "embed"
+	"encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed working_v4_on_state_message.txt
-var workingMessageV4OnState []byte
+const (
+	workingMessageV4OffStateHex = "fef0a500023c0200000000008c290100000000000000000051329c6600000000000000000000f0fe060053776974636865725f56345f423534410000000000000000000000000000000003170a64665200000000000000000000000000000253776974636865725f56345f4235344100000000000000000000000000000000020401001c000000000000003bb3a154010000000000000084030000201c00000101eadecab9"
+	workingMessageV4OnStateHex  = "fef0a500023c020000000000418401000000000000000000708da26600000000000000000000f0fe060053776974636865725f56345f423534410000000000000000000000000000000003170a64665200000000000000000000000000000253776974636865725f56345f4235344100000000000000000000000000000000020401001c000100ce0800007426a25401000000770300000d000000201c00000101a192baab"
+)
 
-func TestDatagramMessage(t *testing.T) {
-	parser := New(workingMessageV4OnState)
+func unhexMessage(t *testing.T, msgHex string) []byte {
+	t.Helper()
+
+	msg, err := hex.DecodeString(msgHex)
+	if err != nil {
+		assert.Fail(t, err.Error())
+	}
+
+	return msg
+}
+
+func TestDatagramOffMessage(t *testing.T) {
+	msg := unhexMessage(t, workingMessageV4OffStateHex)
+	parser := New(msg)
+
+	results, err := parser.ToJSON()
+	if err != nil {
+		assert.Fail(t, err.Error())
+	}
+
 	assert.Equal(
 		t,
-		string(workingMessageV4OnState),
-		parser.String(),
-		"the two messages should be identical",
+		&DatagramParsedJSON{
+			Name:             "Switcher_V4_B54A",
+			IP:               "10.100.102.82",
+			ID:               "000000",
+			Key:              "06",
+			MAC:              "00:00:00:00:00:00",
+			TimeToShutdown:   "2h0m0s",
+			TimeRemaining:    "0s",
+			PowerOn:          false,
+			PowerConsumption: 0,
+		},
+		results,
 	)
 }
 
-func TestDatagramMessageNameParsing(t *testing.T) {
-	parser := New(workingMessageV4OnState)
-	assert.Equal(t, "Switcher_V4_B54A", parser.GetDeviceName())
-}
+func TestDatagramOnMessage(t *testing.T) {
+	msg := unhexMessage(t, workingMessageV4OnStateHex)
+	parser := New(msg)
 
-func TestDatagramMessageKeyParsing(t *testing.T) {
-	parser := New(workingMessageV4OnState)
-	assert.Equal(t, "6c", parser.GetDeviceKey())
-}
-
-func TestDatagramMessageIPParsing(t *testing.T) {
-	parser := New(workingMessageV4OnState)
-	ip, err := parser.GetIPType1()
+	results, err := parser.ToJSON()
 	if err != nil {
-		assert.Errorf(t, err, "unexpected error")
+		assert.Fail(t, err.Error())
 	}
 
-	assert.Equal(t, "75.194.149.194", ip.String())
-}
-
-func TestDatagramMessageMACParsing(t *testing.T) {
-	parser := New(workingMessageV4OnState)
-	mac, err := parser.GetDeviceMAC()
-	if err != nil {
-		assert.Errorf(t, err, "unexpected error")
-	}
-
-	assert.Equal(t, "89:c3:80:30:2a:c2", mac.String())
-}
-
-func TestDatagramMessageIsPoweredOnParsing(t *testing.T) {
-	parser := New(workingMessageV4OnState)
-	isOn := parser.IsPoweredOn()
-
-	assert.True(t, isOn, "the device message should say powered on")
+	assert.Equal(
+		t,
+		&DatagramParsedJSON{
+			Name:             "Switcher_V4_B54A",
+			IP:               "10.100.102.82",
+			ID:               "000000",
+			Key:              "06",
+			MAC:              "00:00:00:00:00:00",
+			TimeToShutdown:   "2h0m0s",
+			TimeRemaining:    "14m47s",
+			PowerOn:          true,
+			PowerConsumption: 2254,
+		},
+		results,
+	)
 }

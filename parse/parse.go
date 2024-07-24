@@ -95,6 +95,7 @@ func (parser *DatagramParser) GetDeviceMAC() (*net.HardwareAddr, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &mac, nil
 }
 
@@ -140,8 +141,8 @@ func (parser *DatagramParser) GetPowerConsumption() (uint64, error) {
 	)
 }
 
-// MarshalJSON returns a JSON struct of the datagram packet
-func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
+// ToJSON returns a JSON data representation
+func (parser *DatagramParser) ToJSON() (*DatagramParsedJSON, error) {
 	ip, err := parser.GetIPType1()
 	if err != nil {
 		return nil, err
@@ -163,7 +164,7 @@ func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	return json.Marshal(&DatagramParsedJSON{
+	return &DatagramParsedJSON{
 		Name:             parser.GetDeviceName(),
 		IP:               ip.String(),
 		ID:               parser.GetDeviceID(),
@@ -173,7 +174,17 @@ func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
 		TimeRemaining:    remaining.String(),
 		PowerOn:          parser.IsPoweredOn(),
 		PowerConsumption: powerConsumption,
-	})
+	}, nil
+}
+
+// MarshalJSON returns a JSON struct of the datagram packet
+func (parser *DatagramParser) MarshalJSON() ([]byte, error) {
+	jsonData, err := parser.ToJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(jsonData)
 }
 
 // New create a DatagramParser instance
