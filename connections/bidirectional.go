@@ -4,7 +4,6 @@ package connections
 import (
 	"encoding/hex"
 	"fmt"
-	"log"
 	"net"
 	"switcherctl/consts"
 	"switcherctl/utils"
@@ -24,7 +23,7 @@ func (c *BidirectionalConn) login(ip net.IP, port int) error {
 	}
 	defer func() {
 		if closeErr := conn.Close(); closeErr != nil {
-			log.Fatalln(closeErr)
+			panic(closeErr)
 		}
 	}()
 

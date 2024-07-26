@@ -4,8 +4,9 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"log"
+	"log/slog"
 	"net"
+	"os"
 	"switcherctl/connections"
 	"switcherctl/consts"
 )
@@ -15,38 +16,36 @@ func main() {
 	port := flag.Int("port", consts.UDPPortType1New, "The local Switcher device's port")
 	flag.Parse()
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
 	parsedIP := net.ParseIP(*ip)
 	if parsedIP == nil {
-		log.Fatalln(consts.ErrInvalidIP)
-		return
+		panic(consts.ErrInvalidIP)
 	}
 	if port == nil || *port < 100 || *port >= 65_000 {
-		log.Fatalln(consts.ErrInvalidPort)
-		return
+		panic(consts.ErrInvalidPort)
 	}
 
 	conn, err := connections.TryNewListener(parsedIP, *port)
 	if err != nil {
-		log.Fatalln(err)
-		return
+		panic(err)
 	}
 	defer func() {
 		if closeErr := conn.Close(); closeErr != nil {
-			log.Fatalln(closeErr)
+			panic(err)
 		}
 	}()
 
 	data, err := conn.Read()
 	if err != nil {
-		log.Fatalln(err)
-		return
+		panic(err)
 	}
 
 	results, err := json.Marshal(data)
 	if err != nil {
-		log.Fatalln(err)
-		return
+		panic(err)
 	}
 
-	log.Println(string(results))
+	slog.Info(string(results))
 }
