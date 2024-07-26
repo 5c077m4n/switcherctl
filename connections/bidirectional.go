@@ -2,8 +2,8 @@
 package connections
 
 import (
-	"errors"
 	"net"
+	"switcherctl/consts"
 	"time"
 )
 
@@ -11,7 +11,7 @@ import (
 type BidirectionalConn struct{ conn *net.UDPConn }
 
 func (c *BidirectionalConn) login() error {
-	return errors.New("not implemented")
+	return consts.ErrNotImplemeted
 }
 
 // Close close the connection

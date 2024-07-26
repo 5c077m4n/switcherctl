@@ -30,7 +30,7 @@ func CurrentTimeHexLE() string {
 
 // GenerateLoginPacketType1 generate a login packet to be sent to a device
 func GenerateLoginPacketType1(deviceKey string) string {
-	return fmt.Sprintf(consts.LoginPacketType1, CurrentTimeHexLE(), deviceKey)
+	return fmt.Sprintf(consts.LoginPacketType1Template, CurrentTimeHexLE(), deviceKey)
 }
 
 var crc32q = crc32.MakeTable(0x1021)
