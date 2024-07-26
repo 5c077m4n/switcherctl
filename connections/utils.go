@@ -1,24 +1,16 @@
-// Package utils general helpers
-package utils
+package connections
 
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
+	"errors"
 	"hash/crc32"
-	"math"
 	"strings"
-	"switcherctl/consts"
 	"time"
 )
 
-// WattsToAmps Convert power consumption from watts to electric current in amps.
-func WattsToAmps(watts int) int {
-	return int(math.Round(float64(watts) / float64(220)))
-}
-
-// CurrentTimeHexLE current time in little edian hex format
-func CurrentTimeHexLE() string {
+// currentTimeHexLE current time in little edian hex format
+func currentTimeHexLE() string {
 	now := time.Now()
 	epochSeconds := now.Unix()
 
@@ -28,15 +20,10 @@ func CurrentTimeHexLE() string {
 	return hex.EncodeToString(timeLEBuf)
 }
 
-// GenerateLoginPacketType1 generate a login packet to be sent to a device
-func GenerateLoginPacketType1(deviceKey string) string {
-	return fmt.Sprintf(consts.LoginPacketType1Template, CurrentTimeHexLE(), deviceKey)
-}
-
 var crc32q = crc32.MakeTable(0x1021)
 
-// SignPacketWithCRCKey use CRC to sign a hex packet
-func SignPacketWithCRCKey(hexPacket string) (string, error) {
+// signPacketWithCRCKey use CRC to sign a hex packet
+func signPacketWithCRCKey(hexPacket string) (string, error) {
 	binPacketChecksum := crc32.Checksum([]byte(hexPacket), crc32q)
 
 	bePacketChecksum := make([]byte, 8)
@@ -47,7 +34,7 @@ func SignPacketWithCRCKey(hexPacket string) (string, error) {
 
 	binKey, err := hex.DecodeString(packetChecksumHexSlice + strings.Repeat("30", 32))
 	if err != nil {
-		return "", err
+		return "", errors.Join(ErrSignPacket, err)
 	}
 	binKeyChecksum := crc32.Checksum(binKey, crc32q)
 

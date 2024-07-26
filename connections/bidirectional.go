@@ -3,59 +3,107 @@ package connections
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"switcherctl/consts"
-	"switcherctl/utils"
 	"time"
 )
 
 // BidirectionalConn the struct for the Switcher connection
 type BidirectionalConn struct {
-	conn      *net.UDPConn
-	sessionID string
+	conn           *net.UDPConn
+	deviceID       string
+	sessionID      string
+	loginTimestamp string
 }
 
 func (c *BidirectionalConn) login(ip net.IP, port int) error {
 	conn, err := TryNewListener(ip, port)
 	if err != nil {
-		return err
+		return errors.Join(ErrLoginFail, err)
 	}
 	defer func() {
 		if closeErr := conn.Close(); closeErr != nil {
-			panic(closeErr)
+			panic(errors.Join(ErrLoginFail, closeErr))
 		}
 	}()
 
 	data, err := conn.Read()
 	if err != nil {
-		return err
+		return errors.Join(ErrLoginFail, err)
 	}
 
-	timestamp := utils.CurrentTimeHexLE()
-	loginPackateHex := fmt.Sprintf(consts.LoginPacketType1Template, timestamp, data.GetDeviceID())
+	timestamp := currentTimeHexLE()
+	loginPackateHex := fmt.Sprintf(consts.TemplatePacketLoginType1, timestamp, data.GetDeviceID())
 
 	loginPackate, err := hex.DecodeString(loginPackateHex)
 	if err != nil {
-		return err
+		return errors.Join(ErrLoginFail, err)
 	}
 
 	_, err = c.conn.Write(loginPackate)
 	if err != nil {
-		return err
+		return errors.Join(ErrLoginFail, err)
 	}
 
 	responseBuf := make([]byte, 1024)
 	n, err := c.conn.Read(responseBuf)
 	if err != nil {
-		return err
+		return errors.Join(ErrLoginFail, err)
 	}
 
 	responseHex := hex.EncodeToString(responseBuf[:n])
 	if len(responseHex) < 24 {
-		return consts.ErrLoginFail
+		return errors.Join(ErrLoginFail, errors.New("response too short"))
 	}
+
 	c.sessionID = string(responseHex[16:24])
+	c.loginTimestamp = timestamp
+
+	return nil
+}
+
+// GetSchedules get device's work schedules
+func (c *BidirectionalConn) GetSchedules() error {
+	packet := fmt.Sprintf(
+		consts.TemplatePacketGetSchedules,
+		c.sessionID,
+		c.loginTimestamp,
+		c.deviceID,
+	)
+	signedPacket, err := signPacketWithCRCKey(packet)
+	if err != nil {
+		return errors.Join(ErrGetSchedules, err)
+	}
+
+	slog.Debug(
+		"schedules",
+		"packet", packet,
+		"signed packet", signedPacket,
+	)
+
+	signedPacketRaw, err := hex.DecodeString(signedPacket)
+	if err != nil {
+		return errors.Join(ErrGetSchedules, err)
+	}
+
+	if _, err = c.conn.Write(signedPacketRaw); err != nil {
+		return errors.Join(ErrGetSchedules, err)
+	}
+
+	responseBuf := make([]byte, 1024)
+	n, err := c.conn.Read(responseBuf)
+	if err != nil {
+		return errors.Join(ErrGetSchedules, err)
+	}
+
+	responseHex := hex.EncodeToString(responseBuf[:n])
+	slog.Debug(
+		"schedules",
+		"response", responseHex,
+	)
 
 	return consts.ErrNotImplemeted
 }
@@ -64,21 +112,23 @@ func (c *BidirectionalConn) login(ip net.IP, port int) error {
 func (c *BidirectionalConn) Close() error { return c.conn.Close() }
 
 // TryNewBidirectionalConn try to create a new connection instance
-func TryNewBidirectionalConn(ip net.IP, port int) (*BidirectionalConn, error) {
-	localAddr := &net.UDPAddr{IP: ip, Port: port}
-
-	conn, err := net.ListenUDP("udp4", localAddr)
+func TryNewBidirectionalConn(ip net.IP, port int, deviceID string) (*BidirectionalConn, error) {
+	addr := &net.UDPAddr{IP: ip, Port: port}
+	conn, err := net.ListenUDP("udp4", addr)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
+	if err = conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
 		return nil, err
 	}
 
-	bidirConn := &BidirectionalConn{conn: conn}
-	if err := bidirConn.login(ip, port); err != nil {
-		return nil, err
+	bidirConn := &BidirectionalConn{conn: conn, deviceID: deviceID}
+	if err := bidirConn.login(addr.IP, addr.Port); err != nil {
+		return nil, errors.Join(
+			errors.New("could not login to device"),
+			err,
+		)
 	}
 
 	return bidirConn, nil

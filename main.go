@@ -16,7 +16,7 @@ func main() {
 	port := flag.Int("port", consts.UDPPortType1New, "The local Switcher device's port")
 	flag.Parse()
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
 	parsedIP := net.ParseIP(*ip)
@@ -47,5 +47,8 @@ func main() {
 		panic(err)
 	}
 
-	slog.Info(string(results))
+	slog.Info(
+		"switcher device data",
+		"value", string(results),
+	)
 }

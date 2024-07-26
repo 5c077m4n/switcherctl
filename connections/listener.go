@@ -22,15 +22,15 @@ func (l *Listener) Read() (*parse.DatagramParser, error) {
 	messageBuffer := make([]byte, 1024)
 	n, remoteAddr, err := l.conn.ReadFromUDP(messageBuffer)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(ErrListenerRead, err)
 	}
 	if !remoteAddr.IP.Equal(l.remote.IP) {
-		return nil, ErrWrongRemote
+		return nil, errors.Join(ErrListenerRead, ErrWrongRemote)
 	}
 
 	data := parse.New(messageBuffer[:n])
 	if !data.IsSwitcher() {
-		return nil, ErrWrongRemote
+		return nil, errors.Join(ErrListenerRead, ErrWrongRemote)
 	}
 
 	return &data, nil
