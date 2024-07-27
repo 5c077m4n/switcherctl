@@ -116,19 +116,16 @@ func TryNewBidirectionalConn(ip net.IP, port int, deviceID string) (*Bidirection
 	addr := &net.UDPAddr{IP: ip, Port: port}
 	conn, err := net.ListenUDP("udp4", addr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
 
 	if err = conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
-		return nil, err
+		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
 
 	bidirConn := &BidirectionalConn{conn: conn, deviceID: deviceID}
 	if err := bidirConn.login(addr.IP, addr.Port); err != nil {
-		return nil, errors.Join(
-			errors.New("could not login to device"),
-			err,
-		)
+		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
 
 	return bidirConn, nil

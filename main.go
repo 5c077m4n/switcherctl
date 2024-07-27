@@ -2,7 +2,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"log/slog"
 	"net"
@@ -14,9 +13,10 @@ import (
 func main() {
 	ip := flag.String("ip", consts.DefaultIP.String(), "The local Switcher device's IP address")
 	port := flag.Int("port", consts.UDPPortType1New, "The local Switcher device's port")
+	shouldGetSchedule := flag.Bool("schedule", false, "Get you Switcher device's work schedule")
 	flag.Parse()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	slog.SetDefault(logger)
 
 	parsedIP := net.ParseIP(*ip)
@@ -27,28 +27,44 @@ func main() {
 		panic(consts.ErrInvalidPort)
 	}
 
-	conn, err := connections.TryNewListener(parsedIP, *port)
+	listener, err := connections.TryNewListener(parsedIP, *port)
 	if err != nil {
 		panic(err)
 	}
 	defer func() {
-		if closeErr := conn.Close(); closeErr != nil {
+		if closeErr := listener.Close(); closeErr != nil {
 			panic(err)
 		}
 	}()
 
-	data, err := conn.Read()
+	data, err := listener.Read()
+	if err != nil {
+		panic(err)
+	}
+	baseDeviceData, err := data.ToJSON()
 	if err != nil {
 		panic(err)
 	}
 
-	results, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-
-	slog.Info(
+	slog.Debug(
 		"switcher device data",
-		"value", string(results),
+		"value", baseDeviceData,
 	)
+
+	if *shouldGetSchedule {
+		biConn, err := connections.TryNewBidirectionalConn(parsedIP, *port, baseDeviceData.ID)
+		if err != nil {
+			panic(err)
+		}
+		defer func() {
+			if err := biConn.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		slog.Debug(
+			"switcher device schedule",
+			"value", biConn.GetSchedules(),
+		)
+	}
 }
