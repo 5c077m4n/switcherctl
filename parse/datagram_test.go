@@ -17,7 +17,7 @@ func unhexMessage(t *testing.T, msgHex string) []byte {
 
 	msg, err := hex.DecodeString(msgHex)
 	if err != nil {
-		assert.Fail(t, err.Error())
+		assert.FailNow(t, err.Error())
 	}
 
 	return msg
@@ -28,25 +28,24 @@ func TestDatagramOffMessage(t *testing.T) {
 	parser := New(msg)
 
 	results, err := parser.ToJSON()
-	if err != nil {
-		assert.Fail(t, err.Error())
-	}
 
-	assert.Equal(
-		t,
-		&DatagramParsedJSON{
-			Name:             "Switcher_V4_B54A",
-			IP:               "10.100.102.82",
-			ID:               "000000",
-			Key:              "06",
-			MAC:              "00:00:00:00:00:00",
-			TimeToShutdown:   "2h0m0s",
-			TimeRemaining:    "0s",
-			PowerOn:          false,
-			PowerConsumption: 0,
-		},
-		results,
-	)
+	if assert.NoError(t, err) {
+		assert.Equal(
+			t,
+			&DatagramParsedJSON{
+				Name:             "Switcher_V4_B54A",
+				IP:               "10.100.102.82",
+				ID:               "000000",
+				Key:              "06",
+				MAC:              "00:00:00:00:00:00",
+				TimeToShutdown:   "2h0m0s",
+				TimeRemaining:    "0s",
+				PowerOn:          false,
+				PowerConsumption: 0,
+			},
+			results,
+		)
+	}
 }
 
 func TestDatagramOnMessage(t *testing.T) {
@@ -54,23 +53,22 @@ func TestDatagramOnMessage(t *testing.T) {
 	parser := New(msg)
 
 	results, err := parser.ToJSON()
-	if err != nil {
-		assert.Fail(t, err.Error())
-	}
 
-	assert.Equal(
-		t,
-		&DatagramParsedJSON{
-			Name:             "Switcher_V4_B54A",
-			IP:               "10.100.102.82",
-			ID:               "000000",
-			Key:              "06",
-			MAC:              "00:00:00:00:00:00",
-			TimeToShutdown:   "2h0m0s",
-			TimeRemaining:    "14m47s",
-			PowerOn:          true,
-			PowerConsumption: 2254,
-		},
-		results,
-	)
+	if assert.NoError(t, err) {
+		assert.Equal(
+			t,
+			&DatagramParsedJSON{
+				Name:             "Switcher_V4_B54A",
+				IP:               "10.100.102.82",
+				ID:               "000000",
+				Key:              "06",
+				MAC:              "00:00:00:00:00:00",
+				TimeToShutdown:   "2h0m0s",
+				TimeRemaining:    "14m47s",
+				PowerOn:          true,
+				PowerConsumption: 2254,
+			},
+			results,
+		)
+	}
 }
