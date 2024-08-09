@@ -13,13 +13,17 @@ import (
 
 // BidirectionalConn the struct for the Switcher connection
 type BidirectionalConn struct {
+	addr           *net.UDPAddr
 	conn           *net.UDPConn
 	deviceID       string
 	sessionID      string
 	loginTimestamp string
 }
 
-func (c *BidirectionalConn) login(ip net.IP, port int) error {
+func (c *BidirectionalConn) login() error {
+	ip := c.addr.IP
+	port := c.addr.Port
+
 	conn, err := TryNewListener(ip, port)
 	if err != nil {
 		return errors.Join(ErrLoginFail, err)
@@ -119,12 +123,12 @@ func TryNewBidirectionalConn(ip net.IP, port int, deviceID string) (*Bidirection
 		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
 
-	if err = conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
+	if err := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
 		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
 
-	bidirConn := &BidirectionalConn{conn: conn, deviceID: deviceID}
-	if err := bidirConn.login(addr.IP, addr.Port); err != nil {
+	bidirConn := &BidirectionalConn{addr: addr, conn: conn, deviceID: deviceID}
+	if err := bidirConn.login(); err != nil {
 		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
 

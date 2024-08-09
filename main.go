@@ -52,6 +52,13 @@ func main() {
 	)
 
 	if *shouldGetSchedule {
+		slog.Debug(
+			"connection data",
+			"ip", parsedIP,
+			"port", port,
+			"device ID", baseDeviceData.ID,
+		)
+
 		biConn, err := connections.TryNewBidirectionalConn(parsedIP, *port, baseDeviceData.ID)
 		if err != nil {
 			panic(err)
