@@ -60,7 +60,7 @@ func (c *BidirectionalConn) login() error {
 
 	responseHex := hex.EncodeToString(responseBuf[:n])
 	if len(responseHex) < 24 {
-		return errors.Join(ErrLoginFail, errors.New("response too short"))
+		return errors.Join(ErrLoginFail, ErrResponseTooShort)
 	}
 
 	c.sessionID = string(responseHex[16:24])

@@ -1,6 +1,8 @@
 package connections
 
-import "errors"
+import (
+	"errors"
+)
 
 // Per-function error wrappers
 var (
@@ -9,4 +11,5 @@ var (
 	ErrListenerRead            = errors.New("could not read message from listener")
 	ErrSignPacket              = errors.New("could not sign packet")
 	ErrTryNewBidirectionalConn = errors.New("could not create a new bi-directional connection")
+	ErrResponseTooShort        = errors.New("response too short")
 )
