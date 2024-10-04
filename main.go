@@ -10,26 +10,10 @@ import (
 	"switcherctl/consts"
 )
 
-func main() {
-	ip := flag.String("ip", consts.DefaultIP.String(), "The local Switcher device's IP address")
-	port := flag.Int("port", consts.UDPPortType1New, "The local Switcher device's port")
-	shouldGetSchedule := flag.Bool("schedule", false, "Get you Switcher device's work schedule")
-	flag.Parse()
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	slog.SetDefault(logger)
-
-	parsedIP := net.ParseIP(*ip)
-	if parsedIP == nil {
-		panic(consts.ErrInvalidIP)
-	}
-	if port == nil || *port < 100 || *port >= 65_000 {
-		panic(consts.ErrInvalidPort)
-	}
-
-	listener, err := connections.TryNewListener(parsedIP, *port)
+func Start(ip net.IP, port uint, shouldGetSchedule bool) error {
+	listener, err := connections.TryNewListener(ip, int(port))
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer func() {
 		if closeErr := listener.Close(); closeErr != nil {
@@ -39,11 +23,11 @@ func main() {
 
 	data, err := listener.Read()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	baseDeviceData, err := data.ToJSON()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	slog.Debug(
@@ -51,17 +35,17 @@ func main() {
 		"value", baseDeviceData,
 	)
 
-	if *shouldGetSchedule {
+	if shouldGetSchedule {
 		slog.Debug(
 			"connection data",
-			"ip", parsedIP,
+			"ip", ip,
 			"port", port,
 			"device ID", baseDeviceData.ID,
 		)
 
-		biConn, err := connections.TryNewBidirectionalConn(parsedIP, *port, baseDeviceData.ID)
+		biConn, err := connections.TryNewBidirectionalConn(ip, int(port), baseDeviceData.ID)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		defer func() {
 			if err := biConn.Close(); err != nil {
@@ -73,5 +57,37 @@ func main() {
 			"switcher device schedule",
 			"value", biConn.GetSchedules(),
 		)
+	}
+
+	return nil
+}
+
+func main() {
+	logger := slog.New(
+		slog.NewJSONHandler(
+			os.Stdout,
+			&slog.HandlerOptions{Level: slog.LevelDebug},
+		),
+	)
+	slog.SetDefault(logger)
+
+	var ip net.IP
+	flag.Func("ip", "The local Switcher device's IP address", func(maybeIP string) error {
+		ip = net.ParseIP(maybeIP)
+		if ip == nil {
+			return consts.ErrInvalidIP
+		}
+		return nil
+	})
+	port := flag.Uint("port", consts.UDPPortType1New, "The local Switcher device's port")
+	shouldGetSchedule := flag.Bool("schedule", false, "Get you Switcher device's work schedule")
+	flag.Parse()
+
+	if port == nil || *port < 100 || *port >= 65_000 {
+		panic(consts.ErrInvalidPort)
+	}
+
+	if err := Start(ip, *port, *shouldGetSchedule); err != nil {
+		panic(err)
 	}
 }
