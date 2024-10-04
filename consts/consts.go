@@ -10,12 +10,12 @@ import (
 
 // Port types and values
 const (
-	UDPPortType1    = 20_002
-	UDPPortType1New = 10_002
-	UDPPortType2    = 20_003
-	UDPPortType2New = 10_003
-	TCPPortType1    = 9_957
-	TCPPortType2    = 10_000
+	UDPPortType1    = uint(20_002)
+	UDPPortType1New = uint(10_002)
+	UDPPortType2    = uint(20_003)
+	UDPPortType2New = uint(10_003)
+	TCPPortType1    = uint(9_957)
+	TCPPortType2    = uint(10_000)
 )
 
 // Device catgories
@@ -57,13 +57,13 @@ var DefaultIP = net.IP{10, 100, 102, 82}
 
 // Devices join maps
 var (
-	DeviceCategoryToUDPPort = map[int]int{
+	DeviceCategoryToUDPPort = map[int]uint{
 		DeviceCategoryWaterHeater: UDPPortType1New,
 		DeviceCategoryPowerPlug:   UDPPortType1,
 		DeviceCategoryThermostat:  UDPPortType2,
 		DeviceCategoryShutter:     UDPPortType2,
 	}
-	DeviceCategoryToTCPPort = map[int]int{
+	DeviceCategoryToTCPPort = map[int]uint{
 		DeviceCategoryWaterHeater: TCPPortType1,
 		DeviceCategoryPowerPlug:   TCPPortType1,
 		DeviceCategoryThermostat:  TCPPortType2,

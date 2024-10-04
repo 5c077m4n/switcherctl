@@ -2,10 +2,12 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"log/slog"
 	"net"
 	"os"
+	"strconv"
 	"switcherctl/connections"
 	"switcherctl/consts"
 )
@@ -71,23 +73,39 @@ func main() {
 	)
 	slog.SetDefault(logger)
 
-	var ip net.IP
+	ip := consts.DefaultIP
 	flag.Func("ip", "The local Switcher device's IP address", func(maybeIP string) error {
-		ip = net.ParseIP(maybeIP)
-		if ip == nil {
+		if maybeIP == "" {
 			return consts.ErrInvalidIP
 		}
+
+		parsedIP := net.ParseIP(maybeIP)
+		if parsedIP == nil {
+			return consts.ErrInvalidIP
+		}
+
+		ip = parsedIP
 		return nil
 	})
-	port := flag.Uint("port", consts.UDPPortType1New, "The local Switcher device's port")
+
+	port := consts.UDPPortType1New
+	flag.Func("port", "The local Switcher device's port", func(maybePort string) error {
+		p, err := strconv.ParseUint(maybePort, 10, 32)
+		if err != nil {
+			return errors.Join(consts.ErrInvalidPort, err)
+		}
+		if p < 100 || p >= 65_000 {
+			return consts.ErrInvalidPort
+		}
+		port = uint(p)
+
+		return nil
+	})
+
 	shouldGetSchedule := flag.Bool("schedule", false, "Get you Switcher device's work schedule")
 	flag.Parse()
 
-	if port == nil || *port < 100 || *port >= 65_000 {
-		panic(consts.ErrInvalidPort)
-	}
-
-	if err := Start(ip, *port, *shouldGetSchedule); err != nil {
+	if err := Start(ip, port, *shouldGetSchedule); err != nil {
 		panic(err)
 	}
 }
