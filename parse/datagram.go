@@ -32,7 +32,7 @@ type (
 		MAC              string `json:"mac"`
 		TimeToShutdown   string `json:"timeToShutdown"`
 		TimeRemaining    string `json:"remainingTime"`
-		PowerOn          bool   `json:"powerOn"`
+		IsPoweredOn      bool   `json:"isPoweredOn"`
 		PowerConsumption uint64 `json:"powerConsumption"`
 	}
 )
@@ -172,7 +172,7 @@ func (parser *DatagramParser) ToJSON() (*DatagramParsedJSON, error) {
 		MAC:              mac.String(),
 		TimeToShutdown:   autoShutdown.String(),
 		TimeRemaining:    remaining.String(),
-		PowerOn:          parser.IsPoweredOn(),
+		IsPoweredOn:      parser.IsPoweredOn(),
 		PowerConsumption: powerConsumption,
 	}, nil
 }
