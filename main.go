@@ -39,7 +39,7 @@ func Start(ip net.IP, port uint, shouldGetSchedule bool) error {
 
 	if shouldGetSchedule {
 		slog.Debug(
-			"connection data",
+			"[schedule] connection data",
 			"ip", ip,
 			"port", port,
 			"device ID", baseDeviceData.ID,
@@ -56,7 +56,7 @@ func Start(ip net.IP, port uint, shouldGetSchedule bool) error {
 		}()
 
 		slog.Debug(
-			"switcher device schedule",
+			"[schedule] switcher device",
 			"value", biConn.GetSchedules(),
 		)
 	}
