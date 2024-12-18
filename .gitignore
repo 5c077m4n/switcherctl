@@ -21,3 +21,6 @@ swithcerctl
 # Go workspace file
 go.work
 go.work.sum
+
+# Apple legacy files
+.DS_Store
