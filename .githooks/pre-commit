@@ -1,4 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
+set -euxo pipefail
 
 golangci-lint config verify
-golangci-lint run --new-from-rev HEAD
+golangci-lint run
+
+go test -v ./...
