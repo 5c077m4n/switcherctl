@@ -73,7 +73,7 @@ func main() {
 	)
 	slog.SetDefault(logger)
 
-	ip := consts.DefaultIP
+	var ip net.IP
 	flag.Func("ip", "The local Switcher device's IP address", func(maybeIP string) error {
 		if maybeIP == "" {
 			return consts.ErrInvalidIP

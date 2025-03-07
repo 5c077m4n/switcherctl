@@ -24,7 +24,7 @@ func (l *Listener) Read() (*parse.DatagramParser, error) {
 	if err != nil {
 		return nil, errors.Join(ErrListenerRead, err)
 	}
-	if !remoteAddr.IP.Equal(l.remote.IP) {
+	if l.remote.IP != nil && !remoteAddr.IP.Equal(l.remote.IP) {
 		return nil, errors.Join(ErrListenerRead, ErrWrongRemote)
 	}
 
@@ -36,7 +36,7 @@ func (l *Listener) Read() (*parse.DatagramParser, error) {
 	return &data, nil
 }
 
-// Close close the connection
+// Close the connection
 func (l *Listener) Close() error { return l.conn.Close() }
 
 // TryNewListener try to create a new connection instance

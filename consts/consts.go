@@ -1,10 +1,6 @@
 // Package consts for storing util consts
 package consts
 
-import (
-	"net"
-)
-
 // Type 1 devices: Heaters (v2, touch, v4, Heater), Plug
 // Type 2 devices: Breeze, Runners
 
@@ -57,9 +53,6 @@ const (
 	TemplatePacketLoginType1   = "fef052000232a10000000000340001000000000000000000%s00000000000000000000f0fe%s00000000000000000000000000000000000000000000000000000000000000000000000000"
 	TemplatePacketGetSchedules = "fef0570002320102%s340001000000000000000000%s00000000000000000000f0fe%s00000000000000000000000000000000000000000000000000000000000000000000000000060000"
 )
-
-// DefaultIP the fallback IP
-var DefaultIP = net.IP{10, 100, 102, 82}
 
 // Devices join maps
 var (
