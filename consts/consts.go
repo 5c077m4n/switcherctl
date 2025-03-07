@@ -8,19 +8,25 @@ import (
 // Type 1 devices: Heaters (v2, touch, v4, Heater), Plug
 // Type 2 devices: Breeze, Runners
 
+type (
+	Port           uint
+	DeviceCategory uint
+	DeviceType     uint
+)
+
 // Port types and values
 const (
-	UDPPortType1    = uint(20_002)
-	UDPPortType1New = uint(10_002)
-	UDPPortType2    = uint(20_003)
-	UDPPortType2New = uint(10_003)
-	TCPPortType1    = uint(9_957)
-	TCPPortType2    = uint(10_000)
+	UDPPortType1    Port = 20_002
+	UDPPortType1New Port = 10_002
+	UDPPortType2    Port = 20_003
+	UDPPortType2New Port = 10_003
+	TCPPortType1    Port = 9_957
+	TCPPortType2    Port = 10_000
 )
 
 // Device catgories
 const (
-	DeviceCategoryWaterHeater = iota
+	DeviceCategoryWaterHeater DeviceCategory = iota
 	DeviceCategoryPowerPlug
 	DeviceCategoryThermostat
 	DeviceCategoryShutter
@@ -28,7 +34,7 @@ const (
 
 // Device types
 const (
-	DeviceTypeMini = iota
+	DeviceTypeMini DeviceType = iota
 	DeviceTypePowerPlug
 	DeviceTypeTouch
 	DeviceTypeV2ESP
@@ -57,19 +63,19 @@ var DefaultIP = net.IP{10, 100, 102, 82}
 
 // Devices join maps
 var (
-	DeviceCategoryToUDPPort = map[int]uint{
+	DeviceCategoryToUDPPort = map[DeviceCategory]Port{
 		DeviceCategoryWaterHeater: UDPPortType1New,
 		DeviceCategoryPowerPlug:   UDPPortType1,
 		DeviceCategoryThermostat:  UDPPortType2,
 		DeviceCategoryShutter:     UDPPortType2,
 	}
-	DeviceCategoryToTCPPort = map[int]uint{
+	DeviceCategoryToTCPPort = map[DeviceCategory]Port{
 		DeviceCategoryWaterHeater: TCPPortType1,
 		DeviceCategoryPowerPlug:   TCPPortType1,
 		DeviceCategoryThermostat:  TCPPortType2,
 		DeviceCategoryShutter:     TCPPortType2,
 	}
-	DeviceTypeToCategory = map[int]int{
+	DeviceTypeToCategory = map[DeviceType]DeviceCategory{
 		DeviceTypeMini:       DeviceCategoryWaterHeater,
 		DeviceTypePowerPlug:  DeviceCategoryPowerPlug,
 		DeviceTypeTouch:      DeviceCategoryWaterHeater,

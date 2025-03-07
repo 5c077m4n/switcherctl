@@ -12,7 +12,7 @@ import (
 	"switcherctl/consts"
 )
 
-func Start(ip net.IP, port uint, shouldGetSchedule bool) error {
+func Start(ip net.IP, port consts.Port, shouldGetSchedule bool) error {
 	listener, err := connections.TryNewListener(ip, int(port))
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func main() {
 		if p < 100 || p >= 65_000 {
 			return consts.ErrInvalidPort
 		}
-		port = uint(p)
+		port = consts.Port(p)
 
 		return nil
 	})
