@@ -14,10 +14,10 @@ func currentTimeHexLE() string {
 	now := time.Now()
 	epochSeconds := now.Unix()
 
-	timeLEBuf := make([]byte, 8)
-	binary.LittleEndian.PutUint64(timeLEBuf, uint64(epochSeconds))
+	leTimeBuffer := make([]byte, 8)
+	binary.LittleEndian.PutUint64(leTimeBuffer, uint64(epochSeconds))
 
-	return hex.EncodeToString(timeLEBuf)
+	return hex.EncodeToString(leTimeBuffer)
 }
 
 var crc32q = crc32.MakeTable(0x1021)

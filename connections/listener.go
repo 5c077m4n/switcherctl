@@ -3,6 +3,7 @@ package connections
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"switcherctl/parse"
 	"time"
@@ -25,7 +26,11 @@ func (l *Listener) Read() (*parse.DatagramParser, error) {
 		return nil, errors.Join(ErrListenerRead, err)
 	}
 	if l.remote.IP != nil && !remoteAddr.IP.Equal(l.remote.IP) {
-		return nil, errors.Join(ErrListenerRead, ErrWrongRemote)
+		return nil, errors.Join(
+			ErrListenerRead,
+			ErrWrongRemote,
+			fmt.Errorf("unkown IP address: %v", remoteAddr.IP),
+		)
 	}
 
 	data := parse.New(messageBuffer[:n])

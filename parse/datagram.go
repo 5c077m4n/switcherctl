@@ -41,7 +41,7 @@ func (parser *DatagramParser) String() string { return string(parser.msg) }
 
 // IsSwitcher test if message originates from a Swticher device
 func (parser *DatagramParser) IsSwitcher() bool {
-	return parser.msgHex[:4] == switcherMessagePrefix &&
+	return parser.msgHex[:len(switcherMessagePrefix)] == switcherMessagePrefix &&
 		(len(parser.msg) == consts.MessageLengthDefault ||
 			len(parser.msg) == consts.MessageLengthBreeze ||
 			len(parser.msg) == consts.MessageLengthRunner)
