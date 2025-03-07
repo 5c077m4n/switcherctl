@@ -22,7 +22,7 @@ type BidirectionalConn struct {
 
 func (c *BidirectionalConn) login() error {
 	ip := c.addr.IP
-	port := c.addr.Port
+	port := consts.Port(c.addr.Port)
 
 	conn, err := TryNewListener(ip, port)
 	if err != nil {
@@ -116,9 +116,13 @@ func (c *BidirectionalConn) GetSchedules() error {
 func (c *BidirectionalConn) Close() error { return c.conn.Close() }
 
 // TryNewBidirectionalConn try to create a new connection instance
-func TryNewBidirectionalConn(ip net.IP, port int, deviceID string) (*BidirectionalConn, error) {
-	addr := &net.UDPAddr{IP: ip, Port: port}
-	conn, err := net.ListenUDP("udp4", addr)
+func TryNewBidirectionalConn(
+	ip net.IP,
+	port consts.Port,
+	deviceID string,
+) (*BidirectionalConn, error) {
+	remoteAddr := &net.UDPAddr{IP: ip, Port: int(port)}
+	conn, err := net.ListenUDP("udp4", remoteAddr)
 	if err != nil {
 		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
@@ -127,7 +131,7 @@ func TryNewBidirectionalConn(ip net.IP, port int, deviceID string) (*Bidirection
 		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}
 
-	bidirConn := &BidirectionalConn{addr: addr, conn: conn, deviceID: deviceID}
+	bidirConn := &BidirectionalConn{addr: remoteAddr, conn: conn, deviceID: deviceID}
 	if err := bidirConn.login(); err != nil {
 		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}

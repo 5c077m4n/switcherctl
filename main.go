@@ -13,7 +13,7 @@ import (
 )
 
 func Start(ip net.IP, port consts.Port, shouldGetSchedule bool) error {
-	listener, err := connections.TryNewListener(ip, int(port))
+	listener, err := connections.TryNewListener(ip, port)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func Start(ip net.IP, port consts.Port, shouldGetSchedule bool) error {
 			"device ID", baseDeviceData.ID,
 		)
 
-		biConn, err := connections.TryNewBidirectionalConn(ip, int(port), baseDeviceData.ID)
+		biConn, err := connections.TryNewBidirectionalConn(ip, port, baseDeviceData.ID)
 		if err != nil {
 			return err
 		}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"switcherctl/consts"
 	"switcherctl/parse"
 	"time"
 )
@@ -45,8 +46,8 @@ func (l *Listener) Read() (*parse.DatagramParser, error) {
 func (l *Listener) Close() error { return l.conn.Close() }
 
 // TryNewListener try to create a new connection instance
-func TryNewListener(ip net.IP, port int) (*Listener, error) {
-	localAddr := &net.UDPAddr{IP: net.IP{0, 0, 0, 0}, Port: port}
+func TryNewListener(ip net.IP, port consts.Port) (*Listener, error) {
+	localAddr := &net.UDPAddr{IP: net.IP{0, 0, 0, 0}, Port: int(port)}
 
 	conn, err := net.ListenUDP("udp4", localAddr)
 	if err != nil {
@@ -57,5 +58,5 @@ func TryNewListener(ip net.IP, port int) (*Listener, error) {
 		return nil, err
 	}
 
-	return &Listener{conn: conn, remote: &net.UDPAddr{IP: ip, Port: port}}, nil
+	return &Listener{conn: conn, remote: &net.UDPAddr{IP: ip, Port: int(port)}}, nil
 }
