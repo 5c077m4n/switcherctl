@@ -30,7 +30,7 @@ func (c *BidirectionalConn) login() error {
 	}
 	defer func() {
 		if closeErr := conn.Close(); closeErr != nil {
-			panic(errors.Join(ErrLoginFail, closeErr))
+			panic(closeErr)
 		}
 	}()
 
@@ -113,7 +113,12 @@ func (c *BidirectionalConn) GetSchedules() error {
 }
 
 // Close close the connection
-func (c *BidirectionalConn) Close() error { return c.conn.Close() }
+func (c *BidirectionalConn) Close() error {
+	if err := c.conn.Close(); err != nil {
+		return errors.Join(ErrBiDirConnClose, err)
+	}
+	return nil
+}
 
 // TryNewBidirectionalConn try to create a new connection instance
 func TryNewBidirectionalConn(

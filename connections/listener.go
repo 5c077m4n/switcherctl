@@ -16,9 +16,6 @@ type Listener struct {
 	remote *net.UDPAddr
 }
 
-// ErrWrongRemote wrong remote error
-var ErrWrongRemote = errors.New("message did not originate from a Switcher device")
-
 // Read read the server's next message
 func (l *Listener) Read() (*parse.DatagramParser, error) {
 	messageBuffer := make([]byte, 1024)
@@ -43,19 +40,24 @@ func (l *Listener) Read() (*parse.DatagramParser, error) {
 }
 
 // Close the connection
-func (l *Listener) Close() error { return l.conn.Close() }
+func (l *Listener) Close() error {
+	if err := l.conn.Close(); err != nil {
+		return errors.Join(ErrListenerClose, err)
+	}
+	return nil
+}
 
 // TryNewListener try to create a new connection instance
 func TryNewListener(ip net.IP, port consts.Port) (*Listener, error) {
-	localAddr := &net.UDPAddr{IP: net.IP{0, 0, 0, 0}, Port: int(port)}
+	localAddr := &net.UDPAddr{Port: int(port)}
 
 	conn, err := net.ListenUDP("udp4", localAddr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(ErrTryNewListener, err)
 	}
 
 	if err := conn.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
-		return nil, err
+		return nil, errors.Join(ErrTryNewListener, err)
 	}
 
 	return &Listener{conn: conn, remote: &net.UDPAddr{IP: ip, Port: int(port)}}, nil
