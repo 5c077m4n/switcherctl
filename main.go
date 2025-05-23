@@ -38,6 +38,10 @@ func Start(ip net.IP, port consts.Port, shouldGetSchedule bool) error {
 	)
 
 	if shouldGetSchedule {
+		if err := listener.Close(); err != nil {
+			return err
+		}
+
 		slog.Debug(
 			"[schedule] connection data",
 			"ip", ip,

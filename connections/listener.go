@@ -7,6 +7,7 @@ import (
 	"net"
 	"switcherctl/consts"
 	"switcherctl/parse"
+	"sync"
 	"time"
 )
 
@@ -41,10 +42,12 @@ func (l *Listener) Read() (*parse.DatagramParser, error) {
 
 // Close the connection
 func (l *Listener) Close() error {
-	if err := l.conn.Close(); err != nil {
-		return errors.Join(ErrListenerClose, err)
-	}
-	return nil
+	return sync.OnceValue(func() error {
+		if err := l.conn.Close(); err != nil {
+			return errors.Join(ErrListenerClose, err)
+		}
+		return nil
+	})()
 }
 
 // TryNewListener try to create a new connection instance
