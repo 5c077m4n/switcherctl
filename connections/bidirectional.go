@@ -127,7 +127,8 @@ func TryNewBidirectionalConn(
 	deviceID string,
 ) (*BidirectionalConn, error) {
 	remoteAddr := &net.UDPAddr{IP: ip, Port: int(port)}
-	conn, err := net.ListenUDP("udp4", remoteAddr)
+
+	conn, err := net.DialUDP("udp4", nil, remoteAddr)
 	if err != nil {
 		return nil, errors.Join(ErrTryNewBidirectionalConn, err)
 	}

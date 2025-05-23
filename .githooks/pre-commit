@@ -4,5 +4,6 @@ set -euxo pipefail
 
 golangci-lint config verify
 golangci-lint run
+gitleaks git --verbose
 
 go test -v ./...
